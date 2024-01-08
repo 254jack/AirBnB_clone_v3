@@ -70,8 +70,8 @@ test_db_storage.py'])
     def test_count(self):
         print("All objects: {}".format(storage.count))
         print("State objects: {}".format(storage.count(State)))
-        fst_state_id = list(storage.all(State).values())[0].id
-        print("First state: {}".format(storage.get(State, fst_state_id)))
+        first_state_id = list(storage.all(State).values())[0].id
+        print("First state: {}".format(storage.get(State, first_state_id)))
     if __name__ == '__main__':
         unittest.main()
 
