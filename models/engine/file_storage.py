@@ -39,14 +39,17 @@ class FileStorage:
         if obj is not None:
             key = obj.__class__.__name__ + "." + obj.id
             self.__objects[key] = obj
+
     def get(self, cls, id):
         """Retrieve one object"""
         key = "{}.{}".format(cls.__name__, id)
         return self.__objects.get(key, None)
+
     def count(self, cls=None):
         """Count teh number of objects in storage"""
         if cls:
-            return sum(1 for obj in self.__objects.values() if isinstance(obj, cls))
+            return sum(1 for obj in self.__objects.values()
+                       if isinstance(obj, cls))
         else:
             return len(self.__objects)
 
@@ -65,8 +68,12 @@ class FileStorage:
                 jo = json.load(f)
             for key in jo:
                 self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
-        except:
-            pass
+        except FileNotFoundError as e:
+            print(f"File not found: {e}")
+        except json.JSONDecodeError as e:
+            print(f"JSN decoding error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occured: {e}")
 
     def delete(self, obj=None):
         """delete obj from __objects if it’s inside"""
