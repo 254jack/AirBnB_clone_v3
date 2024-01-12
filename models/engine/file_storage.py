@@ -26,6 +26,10 @@ class FileStorage:
 
     def all(self, cls=None):
         """returns the dictionary __objects"""
+        if type(cls) is str:
+            if cls in classes:
+                cls = classes.get(cls)
+
         if cls is not None:
             new_dict = {}
             for key, value in self.__objects.items():
@@ -40,19 +44,6 @@ class FileStorage:
             key = obj.__class__.__name__ + "." + obj.id
             self.__objects[key] = obj
 
-    def get(self, cls, id):
-        """Retrieve one object"""
-        key = "{}.{}".format(cls.__name__, id)
-        return self.__objects.get(key, None)
-
-    def count(self, cls=None):
-        """Count teh number of objects in storage"""
-        if cls:
-            return sum(1 for obj in self.__objects.values()
-                       if isinstance(obj, cls))
-        else:
-            return len(self.__objects)
-
     def save(self):
         """serializes __objects to the JSON file (path: __file_path)"""
         json_objects = {}
@@ -62,17 +53,14 @@ class FileStorage:
             json.dump(json_objects, f)
 
     def reload(self):
-        """if file exists, deserializes JSON file to __objects, else nothing"""
-        fname = FileStorage.__file_path
-        FileStorage.__objects = {}
+        """deserializes the JSON file to __objects"""
         try:
-            with open(fname, mode='r', encoding='utf-8') as f_io:
-                new_objs = json.load(f_io)
+            with open(self.__file_path, 'r') as f:
+                jo = json.load(f)
+            for key in jo:
+                self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
         except:
-            return
-        for o_id, d in new_objs.items():
-            k_cls = d['__class__']
-            FileStorage.__objects[o_id] = FileStorage.CNC[k_cls](**d)
+            pass
 
     def delete(self, obj=None):
         """delete obj from __objects if it’s inside"""
@@ -84,3 +72,16 @@ class FileStorage:
     def close(self):
         """call reload() method for deserializing the JSON file to objects"""
         self.reload()
+
+    def get(self, cls, id):
+        """a method to get an object from file storage"""
+        if "{}.{}".format(cls, id) in self.__objects:
+            obj = self.__objects["{}.{}".format(cls, id)]
+            return (obj)
+        else:
+            return (None)
+
+    def count(self, cls=None):
+        """a method to get the count of a type of object"""
+        count = len(self.all(cls))
+        return (count)
